@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <!--
+        <script src="https://unpkg.com/fengari-web/dist/fengari-web.js"></script>
+        !-->
+        <style>
+            @font-face {
+                font-family: "code";
+                src: url(./fonts/code.ttf);
+            }
+
+            ::-webkit-scrollbar {
+                width: 12px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #888;
+                border-radius: 6px;
+                border: 2px solid #f1f1f1;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: #555;
+            }
+
+
+            body{
+                margin: 0;
+                background: rgb(15, 15, 15);
+            }
+
+            .code{
+                border: 0px;
+                font-size: 18px;
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding-left: 36px;
+                padding-right: 10px;
+                padding-bottom: 10px;
+                position: absolute;
+                outline: none;
+                font-family: monospace;
+                line-height: 26px;
+                color: white;
+                resize: none;
+            }
+
+            #codeOverflow{
+                border: 0px;
+                font-size: 18px;
+                width: 574px;
+                height: 450px;
+                padding-top: 10px;
+                padding-left: 36px;
+                padding-right: 10px;
+                padding-bottom: 10px;
+                margin-left: 0px;
+                margin-top: 0px;
+                position: absolute;
+                outline: none;
+                font-family: monospace;
+                line-height: 26px;
+                color: white;
+                background-color: rgb(25, 25, 25);
+                resize: none;
+                margin-left: calc(50% - 300px);
+                margin-top: 140px;
+                border-radius: 10px 0px 0px 0px;
+                z-index: 3;
+                overflow-y: auto;
+                overflow-x: hidden;
+                box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.1);
+            }
+
+            #codeOverlay{
+                pointer-events: none;
+                white-space: pre-wrap;
+            }
+
+            #codeLine{
+                width: 620px;
+                height: 26px;
+                margin-left: -36px;
+                background-color: rgba(255, 255, 255, 0.1);
+                pointer-events: none;
+                position: absolute;
+            }
+
+            .codeLineIndex{
+                background-color: rgba(156, 156, 156, 0.6);
+                pointer-events: none;
+                position: absolute;
+                width: 26px;
+                height: 26px;
+                display: flex;
+                align-items: center;
+                margin-left: -36px;
+                justify-content: center;
+                position: absolute;
+                font-family: monospace;
+                font-size: 18px;
+            }
+
+            #run{
+                position: absolute;
+                width: 150px;
+                height: 50px;
+                background-color: rgb(0, 245, 125);
+                color: black;
+                border-radius: 5px;
+                outline: none;
+                border: none;
+                font-family: Roboto;
+                font-size: 17px;
+                font-weight: 1000;
+                left: 0;
+                top: 0;
+                margin-left: calc(50% - 75px);
+                margin-top: 50px;
+                z-index: 3;
+                background-image: url(./assets//right_arrow.svg);
+                background-repeat: no-repeat;
+                background-size: 30px 30px;
+                background-position: 10px 10px;
+                padding-left: 25px;
+                box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.1);
+            }
+
+            #run:hover{
+                cursor: pointer;
+                transform: scale(1.05);
+                opacity: 0.5;
+            }
+
+            #output{
+                position: absolute;
+                width: 620px;
+                height: 150px;
+                top: 0;
+                left: 0;
+                margin-left: calc(50% - 300px);
+                background-color: rgb(215, 215, 215);
+                margin-top: 610px;
+                border-radius: 0px 0px 10px 10px;
+                overflow-y: auto;
+                z-index: 5;
+                box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.1);
+            }
+
+            .outputLog{
+                font-family: monospace;
+                color: black;
+                font-size: 16px;
+                padding-left: 10px;
+                font-weight: 1000;
+                margin-bottom: -5px;
+                margin-top: 5px;
+            }
+
+            .outputError{
+                font-family: monospace;
+                color: rgb(255, 0, 0);
+                font-size: 16px;
+                padding-left: 10px;
+                font-weight: 1000;
+                margin-bottom: -5px;
+                margin-top: 5px;
+            }
+
+            #outputContent{
+                width: calc(100% - 30px);
+                height: 85px;
+                margin-left: 15px;
+                position: absolute;
+                margin-top: 20px;
+                overflow-y: scroll;
+                background-color: rgb(235, 235, 235);
+                pointer-events: all;
+            }
+
+            #clearOutput{
+                width: 30px;
+                height: 30px;
+                position: absolute;
+                background-image: url(./assets/trash.svg);
+                border-radius: 5px;
+                border: none;
+                outline: none;
+                background-repeat: no-repeat;
+                background-position-x: 5px;
+                background-position-y: 5px;
+                background-size: 20px 20px;
+                left: 0;
+                top: 0;
+                margin-left: 575px;
+                margin-top: 10px;
+                z-index: 2;
+                background-color: rgb(255, 0, 0);
+                pointer-events: all;
+            }
+
+            #clearOutput:hover{
+                transform: scale(1.125);
+                cursor: pointer;
+                opacity: 0.8;
+            }
+
+            #codeArea{
+                overflow-y: hidden;
+                margin-top: -2px;
+            }
+
+            #navbar{
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100vw;
+                height: 70px;
+                z-index: 6;
+                backdrop-filter: blur(3px);
+                box-shadow: 0px 0px 25px 0px rgba(0, 0, 0, 0.42);
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="navbar">
+            <p style="font-family: Roboto; color: white; text-align: center; font-size: 20px; font-weight: 1000; margin-top: 23px;">Online Lua Interpreter</p>
+        </div>
+
+        <div id="codeOverflow">
+            <textarea class="code" id="codeArea" spellcheck="false" style="background-color: rgba(0, 0, 0, 0); color: rgb(255, 255, 255)"></textarea>
+
+            <div class="code" id="codeOverlay" spellcheck="false"></div>
+    
+            <div class="code" id="codeLines" style="pointer-events: none !important; background-color: rgba(0, 0, 0, 0);">
+                <div id="codeLine"></div>
+            </div>
+        </div>
+
+        <div id="output">
+            <p style="font-family: Roboto; color: black; font-size: 19px; text-align: left; padding-left: 15px; font-weight: 1000; margin-bottom: -10px; margin-top: 15px;">Output</p>
+            <button id="clearOutput"></button>
+            <div id="outputContent">
+
+            </div>
+        </div>
+        
+
+        <button id="run">Run Code</button>
+
+        <div style="height: 1500px;"></div>
+    </body>
+
+    <script>
+        const colors = {
+            "red": "rgb(255, 0, 0)",
+            "blue": "rgb(0, 170, 255)",
+            "purple": "rgb(255, 125, 0)",
+            "gray": "rgb(160, 160, 160)",
+            "yellow": "rgb(225, 225, 0)",
+            "print": "rgb(225, 225, 225)",
+        }
+
+        const highlights = [
+            ["if", "red"],               // Conditionals
+            ["then", "red"],
+            ["else", "red"],
+            ["elseif", "red"],
+            ["end", "red"],
+            
+            ["while", "red"],            // Loops
+            ["repeat", "red"],
+            ["for", "red"],
+            ["do", "red"],
+            ["until", "red"],
+
+            ["self", "red"],
+            
+            ["function", "red"],        // Functions and methods
+            ["return", "red"],
+            ["local", "red"],
+            
+            ["print", "blue"],          // Output / Common methods
+            ["tostring", "blue"],          
+            ["tonumber", "blue"],          
+
+            ["require", "purple"],       // Module management
+            ["module", "purple"],
+            
+            ["table", "yellow"],         // Tables and data structures
+            ["setmetatable", "yellow"],
+            ["getmetatable", "yellow"],
+            
+            ["nil", "gray"],             // Special values
+            ["true", "gray"],
+            ["false", "gray"],
+        ];
+
+        // Sort the highlights from longest to shortest
+        for (let i = 0; i < highlights.length; i++){
+            for (let j = i + 1; j < highlights.length; j++){
+                if (highlights[i][0].length < highlights[j][0].length){
+                    const temp = highlights[j]
+                    highlights[j] = highlights[i]
+                    highlights[i] = temp
+                }
+            }
+        }
+
+        const originalConsoleLog = console.log;
+
+        const codeArea = document.getElementById("codeArea")
+        const codeOverlay = document.getElementById("codeOverlay")
+
+        function Highlight(){
+            let text = codeArea.value
+            let newText = ""
+
+            let beforeString = ""
+            let inString = ""
+            let isString = false
+
+            let isComment = false
+            for (let i = 0; i < text.length; i++){                
+                let char = text[i]
+                if (char == `"` && !isComment){
+                    isString = !isString
+                    if (!isString){
+                        // Done reading string
+                        newText += '<span style="color: green;">' + inString + '"</span>'
+                        inString = ""
+                        continue
+                    } else {
+                        for (let j = 0; j < highlights.length; j++){
+                            let hl = highlights[j]
+                            beforeString = beforeString.replaceAll(hl[0], '<span style="color: ' + colors[hl[1]] +'">' + hl[0] +'</span>')
+                        }
+
+                        newText += beforeString
+                        beforeString = ""
+                    }
+                }
+
+                let nextChar = text[i + 1]
+                if (char == "-" && nextChar == "-" && !isComment){
+                    isComment = true
+                    
+                    for (let j = 0; j < highlights.length; j++){
+                        let hl = highlights[j]
+                        beforeString = beforeString.replaceAll(hl[0], '<span style="color: ' + colors[hl[1]] +'">' + hl[0] +'</span>')
+                    }
+
+                    newText += beforeString
+                    beforeString = ""
+                    
+                    newText += `<span style="color: rgb(25, 255, 25)">`
+                }
+
+                if (char == "\n"){
+                    if (isComment){
+                        newText += "</span>"
+                        isComment = false
+                    }
+                }
+                
+                if (isString){
+                    inString += char
+                } else if (isComment){
+                    newText += char
+                } else {
+                    beforeString += char
+                }
+            }
+
+            if (beforeString.length > 0){
+                for (let j = 0; j < highlights.length; j++){
+                    let hl = highlights[j]
+                    beforeString = beforeString.replaceAll(hl[0], '<span style="color: ' + colors[hl[1]] +'">' + hl[0] +'</span>')
+                }
+
+                newText += beforeString
+            }
+
+            if (inString.length > 0){
+                newText += '<span style="color: green;">' + inString + '"</span>'
+            }
+            
+
+            return newText
+        }
+
+        const codeLine = document.getElementById("codeLine")
+
+        function GetCurrentLine(){
+            let value = codeArea.value
+
+            let start = codeArea.selectionStart
+            let totalLines = value.split("\n").length
+            let line = value.substring(0, start).split("\n").length
+            return [line, totalLines]
+        }
+
+        const codeLines = document.getElementById("codeLines")
+
+        const codeLineDivs = {}
+        
+        let outputsTexts = []
+
+        function update(){
+            let d = GetCurrentLine()
+            let line = d[0]
+            let totalLines = d[1]
+            document.querySelectorAll(".code").forEach((e) => {
+                e.style.height = 26*(totalLines + 19) + "px"
+            })
+
+            codeLine.style.marginTop = 26*(line - 1) + "px"
+
+            for (let i = 0; i < totalLines; i++){
+                if (!codeLineDivs[i]){
+                    const div = document.createElement("div")
+                    div.classList.add("codeLineIndex")
+                    div.innerHTML = `${i + 1}`
+                    div.style.marginTop = 26*(i) + "px"
+                    codeLines.appendChild(div)
+                    codeLineDivs[i] = div
+                }
+            }
+
+            let i = totalLines;
+            while (codeLineDivs[i] != null){
+                codeLineDivs[i].remove()
+                codeLineDivs[i] = null
+                i++
+            }
+
+            codeOverlay.innerHTML = Highlight(codeArea.value)
+        }
+
+        codeArea.addEventListener("input", update)
+        codeArea.value = 'print("Hello World!")'
+        update()
+
+        codeArea.addEventListener("keydown", (e) => {
+            if (e.key == "Tab"){
+                e.preventDefault()
+                const start = codeArea.selectionStart
+                const end = codeArea.selectionEnd != start ? codeArea.selectionEnd : codeArea.value.length
+                const se = codeArea.selectionEnd
+                const spaces = '    ';
+                codeArea.value = codeArea.value.substring(0, start) + spaces + codeArea.value.substring(start, end + 1);
+                codeArea.selectionStart = start + spaces.length
+
+                if (se != start){
+                    codeArea.selectionEnd = end + spaces.length
+                } else {
+                    codeArea.selectionEnd = codeArea.selectionStart
+                }
+
+                originalConsoleLog(codeArea.value)
+
+                update()
+            }
+        })
+        
+        // const { lua, to_luastring, tojs } = fengari;
+
+        let output = []
+        console.log = function(...args){
+            output.push([Array.from(arguments).join(" "), "log"])
+        }
+
+        const originalConsoleError = console.error;
+        console.error = function(...args){
+            output.push([Array.from(arguments).join(" "), "error"])
+        }
+
+        const outputContainer = document.getElementById("outputContent")
+        document.getElementById("run").addEventListener("click", () => {
+            output = []
+            const value = codeArea.value
+            let l;
+            let res;
+
+            try{
+                l = fengari.load(value)
+                res = l()
+            } catch(error) {
+                /*
+                if (error instanceof SyntaxError){
+                    console.error(error)
+                }
+                */
+
+                console.error(error)
+            }
+
+            originalConsoleLog(res)
+            for (let i = 0; i < output.length; i++){
+                const p = document.createElement("p")
+                p.innerHTML = output[i][0]
+                originalConsoleLog(output[i][1])
+                if (output[i][1] == "error")
+                {
+                    p.classList.add("outputError")
+                } else {
+                    p.classList.add("outputLog")
+                }
+
+                outputContainer.appendChild(p)
+                outputsTexts.push(p)
+            }
+        })
+
+        document.getElementById("clearOutput").addEventListener("click", () => {
+            for (let i = 0; i < outputsTexts.length; i++){
+                outputsTexts[i].remove()
+            }
+
+            outputsTexts = []
+        })
+    </script>
+</html>
